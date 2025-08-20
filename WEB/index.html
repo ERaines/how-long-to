@@ -79,8 +79,8 @@
     const apiBaseInput = document.getElementById('apiBase');
 
     // --- Persist API base URL in localStorage for convenience across reloads
-    const DEFAULT_API = 'http://127.0.0.1:8000';
-    const API_BASE = localStorage.getItem('https://how-long-to.onrender.com') || DEFAULT_API;
+    const DEFAULT_API = 'https://how-long-to.onrender.com';
+    const API_BASE = localStorage.getItem('api_base') || DEFAULT_API;
     apiBaseInput.value = API_BASE;
     endpointEl.textContent = API_BASE + '/countdown';
 

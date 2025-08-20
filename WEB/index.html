@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>how-long-to</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0; padding: 2rem; min-height: 100dvh; display: grid; place-items: center;
+      background: radial-gradient(1200px 600px at 20% 10%, #e0f2ff33, transparent);
+    }
+    .card {
+      width: min(740px, 92vw);
+      background: rgba(255,255,255,0.75); backdrop-filter: blur(8px);
+      border: 1px solid #e5e7eb; border-radius: 20px; padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.07);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 36px); }
+    p.muted { color:#6b7280; margin-top: 4px; }
+    form { display:flex; gap:12px; flex-wrap:wrap; margin: 12px 0 8px; }
+    input, select, button {
+      padding: 12px 14px; border-radius: 12px; border: 1px solid #e5e7eb; font-size: 16px;
+    }
+    button { background:#0ea5e9; color:white; border:none; cursor:pointer; font-weight:600; }
+    .timer { font-size: clamp(28px, 5vw, 48px); font-weight:800; letter-spacing: 1px; margin-top: 6px;}
+    .error { color:#ef4444; margin-top: 6px; }
+    .footer { margin-top: 14px; font-size: 12px; color:#6b7280; }
+    code { background:#f3f4f6; padding: 2px 6px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⏳ how-long-to</h1>
+    <p class="muted">Frontend calls a Python (Flask) API and renders a live countdown.</p>
+
+    <!-- Simple configuration row: API base URL is persisted in localStorage -->
+    <form id="config">
+      <input id="apiBase" placeholder="API Base (e.g., http://127.0.0.1:8000)" style="min-width: 320px" />
+      <button type="submit">Save API</button>
+    </form>
+
+    <!-- Countdown form -->
+    <form id="form">
+      <input id="title" placeholder="Title (e.g., Christmas)" value="Christmas" />
+      <input id="date" type="date" />
+      <select id="tz">
+        <option>Europe/Dublin</option>
+        <option>UTC</option>
+        <option>Europe/London</option>
+        <option>America/New_York</option>
+        <option>America/Los_Angeles</option>
+      </select>
+      <button type="submit">Start</button>
+    </form>
+
+    <div id="status" class="muted"></div>
+    <div id="timer" class="timer">—</div>
+    <div id="msg" class="muted"></div>
+    <div id="err" class="error"></div>
+
+    <div class="footer">
+      Endpoint: <code id="endpoint">—</code>
+    </div>
+  </div>
+
+  <script>
+    // --- Basic DOM references
+    const configForm = document.getElementById('config');
+    const form = document.getElementById('form');
+    const timerEl = document.getElementById('timer');
+    const msgEl = document.getElementById('msg');
+    const errEl = document.getElementById('err');
+    const statusEl = document.getElementById('status');
+    const endpointEl = document.getElementById('endpoint');
+    const apiBaseInput = document.getElementById('apiBase');
+
+    // --- Persist API base URL in localStorage for convenience across reloads
+    const DEFAULT_API = 'http://127.0.0.1:8000';
+    const API_BASE = localStorage.getItem('api_base') || DEFAULT_API;
+    apiBaseInput.value = API_BASE;
+    endpointEl.textContent = API_BASE + '/countdown';
+
+    configForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const base = apiBaseInput.value.trim() || DEFAULT_API;
+      localStorage.setItem('api_base', base);
+      endpointEl.textContent = base + '/countdown';
+      statusEl.textContent = `API base saved: ${base}`;
+    });
+
+    let interval;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearInterval(interval);
+      errEl.textContent = '';
+      timerEl.textContent = '—';
+      msgEl.textContent = '';
+      statusEl.textContent = 'Loading…';
+
+      // --- Read user inputs
+      const title = document.getElementById('title').value || 'Event';
+      const date = document.getElementById('date').value;
+      const tz = document.getElementById('tz').value;
+      const base = (localStorage.getItem('api_base') || DEFAULT_API).replace(/\/+$/, '');
+
+      // --- Basic validation (frontend)
+      if (!date) {
+        errEl.textContent = 'Please select a date (YYYY-MM-DD).';
+        statusEl.textContent = '';
+        return;
+      }
+
+      // --- Build URL with query parameters
+      const url = new URL(base + '/countdown');
+      url.searchParams.set('title', title);
+      url.searchParams.set('date', date);
+      url.searchParams.set('tz', tz);
+
+      try {
+        // --- Call the Flask API
+        const res = await fetch(url.toString(), { method: 'GET' });
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+        const data = await res.json();
+
+        // --- Display metadata
+        statusEl.textContent = `${data.timezone} | now: ${new Date(data.now).toLocaleString()}`;
+        endpointEl.textContent = base + '/countdown';
+
+        // --- Render function recalculates seconds on the client side every second
+        const t0 = Date.now();
+        const serverNow = new Date(data.now).getTime();
+
+        const render = () => {
+          // seconds passed on the client since the initial fetch
+          const drift = Math.floor((Date.now() - t0) / 1000);
+          const total = data.total_seconds - drift;
+          const abs = Math.abs(total);
+
+          // breakdown
+          const days = Math.floor(abs / 86400);
+          const hours = Math.floor((abs % 86400) / 3600);
+          const minutes = Math.floor((abs % 3600) / 60);
+          const seconds = abs % 60;
+
+          const label = total < 0 ? 'Elapsed' : 'Remaining';
+          timerEl.textContent = `${label} ${days}d ${hours}h ${minutes}m ${seconds}s`;
+          msgEl.textContent = (total < 0 ? 'since ' : 'until ') + data.title + ' • target: ' + new Date(data.target).toLocaleString();
+        };
+
+        render();
+        interval = setInterval(render, 1000);
+
+      } catch (err) {
+        console.error(err);
+        errEl.textContent = 'Failed to call the API. Check API base URL and CORS.';
+        statusEl.textContent = '';
+      }
+    });
+  </script>
+</body>
+</html>

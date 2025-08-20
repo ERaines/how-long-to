@@ -78,9 +78,9 @@
     const endpointEl = document.getElementById('endpoint');
     const apiBaseInput = document.getElementById('apiBase');
 
-    // --- Persist API base URL in localStorage for convenience across reloads
-    const DEFAULT_API = 'https://how-long-to.onrender.com';
-    const API_BASE = localStorage.getItem('https://how-long-to.onrender.com') || DEFAULT_API;
+    // Use same-origin by default (works in production when frontend is served by Flask)
+    const DEFAULT_API = window.location.origin;
+    const API_BASE = localStorage.getItem('api_base') || DEFAULT_API;
     apiBaseInput.value = API_BASE;
     endpointEl.textContent = API_BASE + '/countdown';
 

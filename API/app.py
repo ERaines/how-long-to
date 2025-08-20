@@ -2,11 +2,18 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from core import compute_countdown
 
-# Create Flask application instance
-app = Flask(__name__)
+# Serve static files from "static" and mount them at "/"
+app = Flask(__name__, static_folder="static", static_url_path="")
 
-# Enable CORS to allow requests from a separate frontend (browser-based clients)
-CORS(app)
+# Configure CORS (allow all origins for demo purposes)
+CORS(
+    app,
+    resources={r"/*": {"origins": "*"}},
+    allow_headers=["Content-Type"],
+    methods=["GET", "OPTIONS"],
+    supports_credentials=False,
+    max_age=600,
+)
 
 
 @app.get("/health")
@@ -68,16 +75,9 @@ def countdown():
 @app.get("/")
 def root():
     """
-    Friendly root route so hitting "/" is helpful instead of 404.
+    Serve the SPA index.html from /static so the root URL shows the frontend.
     """
-    return {
-        "name": "how-long-to API",
-        "version": "1.0.0",
-        "endpoints": {
-            "health": "/health",
-            "countdown": "/countdown?date=YYYY-MM-DD&tz=Europe/Dublin&title=Event"
-        }
-    }, 200
+    return app.send_static_file("index.html")
 
 
 if __name__ == "__main__":

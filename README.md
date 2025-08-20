@@ -5,6 +5,9 @@ It calculates how much time is left (or elapsed) until a specific date/event in 
 
 🔗 Live Demo: how-long-to.onrender.com
 
+<img src="https://github.com/ERaines/how-long-to/blob/main/WEB/image/Screenshot%202025-08-20%20184909.png?raw=true" 
+     alt="Imagem de How long to" width="150"/>
+
 ✨ Features
 
 🕒 Countdown API: returns days/hours/minutes/seconds until an event.

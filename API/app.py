@@ -65,6 +65,21 @@ def countdown():
     })
 
 
+@app.get("/")
+def root():
+    """
+    Friendly root route so hitting "/" is helpful instead of 404.
+    """
+    return {
+        "name": "how-long-to API",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "countdown": "/countdown?date=YYYY-MM-DD&tz=Europe/Dublin&title=Event"
+        }
+    }, 200
+
+
 if __name__ == "__main__":
     # Run development server (do not use in production!)
     app.run(port=8000, debug=True)

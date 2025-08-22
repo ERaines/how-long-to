@@ -1,58 +1,32 @@
-📌 how-long-to
+how-long-to
 
 A simple countdown web app and API built with Python (Flask), containerized with Docker, and deployed on Render.
 It calculates how much time is left (or elapsed) until a specific date/event in any timezone.
 
-🔗 Live Demo: how-long-to.onrender.com
+Live Demo: [how-long-to.onrender.com](https://how-long-to.onrender.com/)
 
 <img src="https://github.com/ERaines/how-long-to/blob/main/WEB/image/Screenshot%202025-08-20%20184909.png?raw=true" 
      alt="Imagem de How long to" width="150"/>
 
-✨ Features
+Features
 
-🕒 Countdown API: returns days/hours/minutes/seconds until an event.
+Countdown API: returns days/hours/minutes/seconds until an event.
 
-🌍 Timezone support (IANA tz database, via tzdata).
+Timezone support (IANA tz database, via tzdata).
 
-⚡ Frontend: lightweight HTML + JavaScript interface, served by Flask.
+Frontend: lightweight HTML + JavaScript interface, served by Flask.
 
-🐳 Dockerized: portable, production-ready setup with Gunicorn.
+Dockerized: portable, production-ready setup with Gunicorn.
 
-☁️ Deploy: running on Render
-.
+Deploy: running on Render
 
-🚀 Endpoints
+
+Endpoints
 Health check
 GET /health
 
 
-Response:
-
-{"status": "ok"}
-
-Countdown
-GET /countdown?date=2025-12-25&title=Christmas&tz=Europe/Dublin
-
-
-Response:
-
-{
-  "title": "Christmas",
-  "target": "2025-12-25T00:00:00+00:00",
-  "now": "2025-08-20T15:00:00+00:00",
-  "timezone": "Europe/Dublin",
-  "total_seconds": 10944000,
-  "past": false,
-  "breakdown": {
-    "days": 126,
-    "hours": 12,
-    "minutes": 0,
-    "seconds": 0
-  },
-  "message": "Remaining 126d 12h 0m 0s until Christmas"
-}
-
-🛠️ Tech Stack
+Tech Stack
 
 Backend: Flask + flask-cors + python-dateutil + tzdata
 
@@ -64,7 +38,7 @@ Deploy: Render Web Service (Docker runtime)
 
 Version Control: Git + GitHub
 
-🧑‍💻 Running locally
+Running locally
 Prerequisites
 
 Python 3.11+
@@ -94,18 +68,14 @@ Option B: serve it with Python:
 cd api/static
 python -m http.server 5500
 
-🐳 Docker (alternative run)
+Docker (alternative run)
 cd api
 docker build -t how-long-to .
 docker run -p 8000:8000 how-long-to
 
-✅ Tests
+Tests
 cd api
 pytest -q
 
-
-📜 License
-
-MIT License. Free to use, modify, and share.
 
 PS: This project was created with the aim of understanding the entire process of putting an API online, and it was developed with the help of an AI.
